@@ -1,6 +1,6 @@
 using ProgressMeter
 
-function energy(lattice::AbstractIsingLattice)
+function energy(lattice::CircularArray)
     kern = [
         0 1 0;
         1 0 1;

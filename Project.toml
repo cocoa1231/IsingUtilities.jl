@@ -1,7 +1,7 @@
 name = "IsingUtilities"
 uuid = "2f324de0-ce50-44f0-a225-012c44e9f1ae"
 authors = ["Cocoa <cocoathepenguin@protonmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 CircularArrays = "7a955b69-7140-5f4e-a0ed-f168c5e2e749"
