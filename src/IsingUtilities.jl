@@ -12,7 +12,7 @@ export metropolis!
 
 include("IsingTypes.jl")
 
-function fill_magnetization_history!(lattice::IsingLattice)
+function fill_magnetization_history!(lattice::AbstractIsingLattice)
     l = copy(lattice.initial_state)
     lattice.magnetization_history = Float64[sum(l)]
     for (idx, s_k) in enumerate(lattice.spin_flip_history)
@@ -29,7 +29,7 @@ function fill_magnetization_history!(lattice::IsingLattice)
     return lattice.magnetization_history
 end
 
-function fill_internalenergy_history!(lattice::IsingLattice)
+function fill_internalenergy_history!(lattice::AbstractIsingLattice)
     l = copy(lattice.initial_state)
     lattice.internal_energy_history = Float64[energy(l)]
     for (idx, s_k) in enumerate(lattice.spin_flip_history)

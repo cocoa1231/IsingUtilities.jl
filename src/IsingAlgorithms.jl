@@ -18,7 +18,7 @@ function ΔE_at_site(lattice::CircularArray, k)
 end
 
 # Metropolis Algorithm for evolving the lattice
-function metropolis!(lattice::IsingLattice, steps::Integer, β::Float64)
+function metropolis!(lattice::AbstractIsingLattice, steps::Integer, β::Float64)
     
     possible_EChange = [-8:2:8;]
     exponentials = Dict(possible_EChange .* -β .=> exp.(possible_EChange .* -β))
