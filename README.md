@@ -15,13 +15,12 @@ these functions can act -
 
 ```julia
 julia> methodswith(IsingUtilities.AbstractIsingLattice)
-[1] energy(lattice::IsingUtilities.AbstractIsingLattice) in IsingUtilities at /home/cocoafedora/.julia/packages/IsingUtilities/njdYe/src/IsingAlgorithms.jl:3
-[2] fill_internalenergy_history!(lattice::IsingUtilities.AbstractIsingLattice) in IsingUtilities at /home/cocoafedora/.julia/packages/IsingUtilities/njdYe/src/IsingUtilities.jl:32
-[3] fill_magnetization_history!(lattice::IsingUtilities.AbstractIsingLattice) in IsingUtilities at /home/cocoafedora/.julia/packages/IsingUtilities/njdYe/src/IsingUtilities.jl:15
-[4] metropolis!(lattice::IsingUtilities.AbstractIsingLattice, steps::Integer, β::Float64) in IsingUtilities at /home/cocoafedora/.julia/packages/IsingUtilities/njdYe/src/IsingAlgorithms.jl:21
+[1] fill_internalenergy_history!(lattice::IsingUtilities.AbstractIsingLattice) in IsingUtilities at /home/cocoafedora/.julia/packages/IsingUtilities/k4KAy/src/IsingUtilities.jl:32
+[2] fill_magnetization_history!(lattice::IsingUtilities.AbstractIsingLattice) in IsingUtilities at /home/cocoafedora/.julia/packages/IsingUtilities/k4KAy/src/IsingUtilities.jl:15
+[3] metropolis!(lattice::IsingUtilities.AbstractIsingLattice, steps::Integer, β::Float64) in IsingUtilities at /home/cocoafedora/.julia/packages/IsingUtilities/k4KAy/src/IsingAlgorithms.jl:21
 ```
 
-The first three are utility functions, providing the ability to fill the magnetization history based on single-spin-flip history.
+The three are utility functions, providing the ability to fill the magnetization history based on single-spin-flip history.
 In the future I will be adding cluster algorithms too. But at the moment one can evolve the lattice a given number of Monte Carlo
 steps using the `metropolis!` mutating function which will fill in the spin flip history. Then one can fill in the magnetization
 and internal energy history of the lattice and take measurements on that. Basic usage goes something like this -
