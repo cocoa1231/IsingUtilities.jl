@@ -79,20 +79,6 @@ function estimate_eq_time(lattice::AbstractIsingLattice; deviation_tolerance = 1
     
     m = getfield(lattice, estimator) ./ prod(size(lattice))
     
-    # Check for thermalization
-    if estimator == :magnetization_history
-        if !(0.95 < abs(m[end]) < 1.05)
-            @error "System not thermalized!"
-            return -1
-        end
-    elseif estimator == :internal_energy_history
-        if !(1.95 < abs(m[end]) < 2.05)
-            @error "System not thermalized!"
-            return -1
-        end
-    end
-    
-    
     N, N = size(lattice.initial_state)
     step_size = floor(Int, step_sweep_size * N^2)
     
