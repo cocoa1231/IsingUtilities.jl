@@ -149,7 +149,7 @@ function generate_autocorr_data(lattice::IsingLattice; n_sweeps = 100, show_prog
     χ = zeros( ceil(Int(t_max / N^2)) )
     
     if show_progress
-        P = Progress(npts)
+        P = Progress(length(χ))
         Threads.@threads for t in 1:Int(N^2):t_max
             χ[t] = slow_autocorr(m, t)
             next!(P)
