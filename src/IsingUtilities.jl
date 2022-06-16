@@ -16,7 +16,7 @@ include("IsingTypes.jl")
 function fill_magnetization_history!(lattice::AbstractIsingLattice)
     l = copy(lattice.initial_state)
     lattice.magnetization_history = Float64[sum(l)]
-    for (idx, s_k) in enumerate(lattice.spin_flip_history)
+    for s_k in lattice.spin_flip_history
         if s_k == (-1, -1)
             push!(lattice.magnetization_history, lattice.magnetization_history[end])
         else
@@ -33,7 +33,7 @@ end
 function fill_internalenergy_history!(lattice::AbstractIsingLattice)
     l = copy(lattice.initial_state)
     lattice.internal_energy_history = Float64[energy(l)]
-    for (idx, s_k) in enumerate(lattice.spin_flip_history)
+    for s_k in lattice.spin_flip_history
         if s_k == (-1, -1)
             push!(lattice.internal_energy_history, lattice.internal_energy_history[end])
         else
@@ -59,7 +59,7 @@ function generate_lattice(N::Integer, T::Symbol)
     return lattice
 end
 
-function estimate_eq_time(lattice::AbstractIsingLattice; deviation_tolerance = 1e-5, estimator = :magnetization_history,
+function estimate_eq_time(lattice::IsingLattice; deviation_tolerance = 1e-5, estimator = :magnetization_history,
     step_sweep_size = 10, iterlim = Int(1e5))
 
     if isempty(getfield(lattice, estimator))
@@ -77,7 +77,10 @@ function estimate_eq_time(lattice::AbstractIsingLattice; deviation_tolerance = 1
         end
     end
     
+    
     m = getfield(lattice, estimator) ./ prod(size(lattice))
+    mc_perc  = 0:1/length(m):1
+    
     
     N, N = size(lattice.initial_state)
     step_size = floor(Int, step_sweep_size * N^2)
@@ -88,8 +91,8 @@ function estimate_eq_time(lattice::AbstractIsingLattice; deviation_tolerance = 1
     
     # Pick the starting point of my slope calculation
     τ_eq = 1
-    p2 = (length(m), m[end])
-    p1 = (τ_eq, m[τ_eq])
+    p2 = (mc_perc[end], m[end])
+    p1 = (mc_perc[τ_eq], m[τ_eq])
     
     niters = 0
     while !(slope_min <= slope(p1, p2) <= slope_max)
@@ -107,7 +110,7 @@ function estimate_eq_time(lattice::AbstractIsingLattice; deviation_tolerance = 1
         end
         
         
-        p1 = (τ_eq, m[τ_eq])
+        p1 = (mc_perc[τ_eq], m[τ_eq])
         
         niters += 1
     end
