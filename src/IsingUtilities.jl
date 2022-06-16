@@ -119,7 +119,7 @@ function estimate_eq_time(lattice::IsingLattice; deviation_tolerance = 1e-5, est
 end
 
 # Naieve autocorrelation function
-function slow_autocorr(magnetization_history, t)
+function sum_autocorr(magnetization_history, t)
     # t_max is the number of monte carlo steps we've taken in total
     t_max = length(magnetization_history)
     
@@ -133,6 +133,7 @@ function slow_autocorr(magnetization_history, t)
     
     return norm * sum(m[1:t_max - t] .* m[t+1:t_max]) - mean_m²
 end
+
 
 function generate_autocorr_data(lattice::IsingLattice, nsweeps; show_progress = true)
     # Check if magnetization data is available
@@ -151,16 +152,60 @@ function generate_autocorr_data(lattice::IsingLattice, nsweeps; show_progress = 
     if show_progress
         P = Progress(length(χ))
         Threads.@threads for t in 1:length(χ)
-            χ[t] = slow_autocorr(m, Int(t*N^2))
+            χ[t] = sum_autocorr(m, Int(t*N^2))
             next!(P)
         end
     else
         Threads.@threads for t in 1:length(χ)
-            χ[t] = slow_autocorr(m, Int(t*N^2))
+            χ[t] = sum_autocorr(m, Int(t*N^2))
         end
     end
     
     return χ
+end
+
+function estimate_corr_time(autocorr_data; get_upper_bound = false, bound_step_size = 2, atol = 1e-3)
+    
+    # Create an array of the upper bounds of integration
+    upper_bound = 10
+    τ_estimates = [trapz([1:upper_bound;], autocorr_data[1:upper_bound])]
+    
+    while true
+        # Calculate the next upper bound, which is bound_step_size lattice sweeps away
+        upper_bound += bound_step_size
+        
+        # If atol is not reached even though we have exhausted our data, return the best possible value we have
+        if upper_bound >= length(autocorr_data)
+            Δτ = τ_estimates[end] - τ_estimates[end-1]
+            @warn "Failed to reach required accuracy! Difference between last two calculations $(Δτ)"
+            trustworthy_digits = findfirst([i != '0' for i  in split(string(Δτ), ".")[2] ])
+            
+            if get_upper_bound
+                return round(τ_estimates[end], digits = trustworthy_digits), Int(upper_bound)
+            end
+            return round(τ_estimates[end], digits = trustworthy_digits)
+        end
+        
+        # Calculate the next value of τ
+        push!( τ_estimates, trapz([1:upper_bound;], autocorr_data[1:upper_bound]))
+        
+        # If atol is reached, we're done
+        if τ_estimates[end] - τ_estimates[end-1] < atol
+            break
+        end
+    end
+    
+    
+    Δτ = τ_estimates[end] - τ_estimates[end-1]
+    trustworthy_digits = findfirst([i != '0' for i  in split(string(Δτ), ".")[2] ])
+    
+    τ = round(τ_estimates[end], digits = trustworthy_digits)
+    
+    if get_upper_bound
+        return τ, floor(Int, upper_bound)
+    end
+    
+    return τ
 end
 
 include("IsingAlgorithms.jl")
