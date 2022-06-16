@@ -10,6 +10,7 @@ export fill_magnetization_history!, fill_internalenergy_history!
 export generate_lattice
 export metropolis!
 export estimate_eq_time
+export generate_autocorr_data
 
 include("IsingTypes.jl")
 
@@ -67,9 +68,7 @@ function estimate_eq_time(lattice::IsingLattice; deviation_tolerance = 1e-5, est
         if estimator == :magnetization_history
             fill_magnetization_history!(lattice)
         elseif estimator == :internal_energy_history
-            fill_internalenergy_history!(lattice)
-        end
-        
+            fill_internalenergy_history!(lattice) end 
         # If estimator is still missing, exit
         if isempty(getfield(lattice, estimator)[2:end])
             @error "Unable to fill estimator data! Exiting"
@@ -117,6 +116,51 @@ function estimate_eq_time(lattice::IsingLattice; deviation_tolerance = 1e-5, est
     
     return τ_eq ./ N^2
     
+end
+
+# Naieve autocorrelation function
+function slow_autocorr(magnetization_history, t)
+    # t_max is the number of monte carlo steps we've taken in total
+    t_max = length(magnetization_history)
+    
+    # Magnetization history m, assuming I've run fill_magnetization_history! already on the lattice
+    m = magnetization_history
+    
+    # Normalization constant
+    norm = 1/(t_max - t)
+    
+    mean_m² = norm * sum(m[1:t_max-t]) * norm * sum(m[t+1:t_max])
+    
+    return norm * sum(m[1:t_max - t] .* m[t+1:t_max]) - mean_m²
+end
+
+function generate_autocorr_data(lattice::IsingLattice, eq_time; n_sweeps = 100, show_progress = true)
+    # Check if magnetization data is available
+    if isempty(lattice.magnetization_history)
+        @info "Filling magnetization data"
+        fill_magnetization_history!(lattice)
+    end
+    
+    N = size(lattice.initial_state)[1]
+    m = lattice.magnetization_history[ceil(Int, eq_time*N^2):end]
+    npts = floor(Int, n_sweeps*N^2)
+    
+    # Create an array of corresponding χ values
+    χ = zeros(npts)
+    
+    if show_progress
+        P = Progress(npts)
+        Threads.@threads for t in 1:npts
+            χ[t] = slow_χ(m, t)
+            next!(P)
+        end
+    else
+        Threads.@threads for t in 1:npts
+            χ[t] = slow_χ(m, t)
+        end
+    end
+    
+    return χ
 end
 
 include("IsingAlgorithms.jl")
