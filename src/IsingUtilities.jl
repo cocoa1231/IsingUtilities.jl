@@ -151,12 +151,12 @@ function generate_autocorr_data(lattice::IsingLattice, eq_time; n_sweeps = 100, 
     if show_progress
         P = Progress(npts)
         Threads.@threads for t in 1:npts
-            χ[t] = slow_χ(m, t)
+            χ[t] = slow_autocorr(m, t)
             next!(P)
         end
     else
         Threads.@threads for t in 1:npts
-            χ[t] = slow_χ(m, t)
+            χ[t] = slow_autocorr(m, t)
         end
     end
     
