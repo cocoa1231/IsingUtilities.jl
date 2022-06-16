@@ -134,7 +134,7 @@ function slow_autocorr(magnetization_history, t)
     return norm * sum(m[1:t_max - t] .* m[t+1:t_max]) - mean_m²
 end
 
-function generate_autocorr_data(lattice::IsingLattice, eq_time; n_sweeps = 100, show_progress = true)
+function generate_autocorr_data(lattice::IsingLattice; n_sweeps = 100, show_progress = true)
     # Check if magnetization data is available
     if isempty(lattice.magnetization_history)
         @info "Filling magnetization data"
@@ -142,20 +142,20 @@ function generate_autocorr_data(lattice::IsingLattice, eq_time; n_sweeps = 100, 
     end
     
     N = size(lattice.initial_state)[1]
-    m = lattice.magnetization_history[ceil(Int, eq_time*N^2):end]
-    npts = floor(Int, n_sweeps*N^2)
+    m = lattice.magnetization_history
+    t_max = floor(Int, n_sweeps*N^2)
     
     # Create an array of corresponding χ values
-    χ = zeros(npts)
+    χ = zeros( ceil(Int(t_max / N^2)) )
     
     if show_progress
         P = Progress(npts)
-        Threads.@threads for t in 1:npts
+        Threads.@threads for t in 1:Int(N^2):t_max
             χ[t] = slow_autocorr(m, t)
             next!(P)
         end
     else
-        Threads.@threads for t in 1:npts
+        Threads.@threads for t in 1:Int(N^2):t_max
             χ[t] = slow_autocorr(m, t)
         end
     end
