@@ -2,6 +2,7 @@ module IsingUtilities
 
 using CircularArrays
 using SciPy:signal as signal
+using Trapz
 
 export IsingLattice # Main type used
 export energy
@@ -10,6 +11,7 @@ export fill_magnetization_history!, fill_internalenergy_history!
 export generate_lattice
 export metropolis!
 export estimate_eq_time
+export estimate_corr_time
 export generate_autocorr_data
 
 include("IsingTypes.jl")
