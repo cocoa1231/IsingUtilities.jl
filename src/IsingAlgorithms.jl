@@ -18,13 +18,14 @@ function ΔE_at_site(lattice::CircularArray, k)
 end
 
 # Metropolis Algorithm for evolving the lattice
-function metropolis!(lattice::AbstractIsingLattice, steps::Integer, β::Float64)
+function metropolis!(lattice::AbstractIsingLattice, steps::Integer, β::Float64; showprogress = false)
     
     possible_EChange = [-8:2:8;]
     exponentials = Dict(possible_EChange .* -β .=> exp.(possible_EChange .* -β))
     N = size(lattice.initial_state)[1]
     
-    @showprogress for step in 1:steps
+    p = Progress(steps)
+    for step in 1:steps
         
         # Pick a random lattice point
         x, y = rand(1:N, 2)
@@ -56,6 +57,9 @@ function metropolis!(lattice::AbstractIsingLattice, steps::Integer, β::Float64)
                     end
                 end
             end
+        end
+        if showprogress == true
+            next!(p)
         end
     end
     
